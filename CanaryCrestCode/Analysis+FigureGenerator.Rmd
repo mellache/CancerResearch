@@ -1,0 +1,685 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+locked_sens <- function(spec,sens) {
+  tfun <- approxfun(spec,sens,ties="ordered")
+  lsens <- tfun(0.99)
+  return(lsens)
+}
+
+calc_sens <- function(data,size,seed) {
+  set.seed(size)
+  sens_vec <- numeric(100)
+  for (i in 1:100) {
+  print(i)
+  class_index5 <- createDataPartition(data$tumor, p = .8, list = FALSE)
+  class_train5 <- data[class_index5, ]
+  class_test5 <- data[-class_index5, ]
+  # slnrf_fit5 <- train(as.factor(tumor) ~ .,
+  #                     data = class_train5[],
+  #                     method = "lda",  ## can also do "lasso, "ridge", ...etc
+  #                     preProc = c("center","scale")) 
+  rnrf_fit7 <- train(as.factor(tumor) ~ .,
+                     data = class_train5[],
+                     method = "rf",  ## can also do "lasso, "ridge", ...etc
+                     preProc = c("center","scale")) 
+  # gnrf_fit7 <- train(as.factor(tumor) ~ .,
+  #                    data = class_train5[],
+  #                    method = "glm",  ## can also do "lasso, "ridge", ...etc
+  #                    preProc = c("center","scale")) 
+  # nrf_fit5 <- train(as.factor(tumor) ~ .,
+  #                   data = class_train5[],
+  #                   method = "naive_bayes",  ## can also do "lasso, "ridge", ...etc
+  #                   preProc = c("center","scale")) 
+  # slnrf5_roc <- predict(slnrf_fit5, class_test5, type="prob")
+  # slnrf5_tree <- roc(as.character(class_test5$tumor), slnrf5_roc[,"0"])
+  # r <- predict(rnrf_fit7, class_test5)
+  rnrf7_roc <- predict(rnrf_fit7, class_test5, type="prob")
+  # cf7b <- confusionMatrix(r, as.factor(class_test5$tumor))
+  rnrf7_tree <- roc(as.character(class_test5$tumor), rnrf7_roc[,as.character(size)])
+  # g <-  predict(gnrf_fit7, class_test5)
+  # gnrf7_roc <- predict(gnrf_fit7, class_test5, type="prob")
+  # cf7b2 <- confusionMatrix(g, as.factor(class_test5$tumor))
+  # gnrf7_tree <- roc(as.character(class_test5$tumor), gnrf7_roc[,"7"])
+  # nrf5_roc <- predict(nrf_fit5, class_test5, type="prob")
+  # nrf5_tree <- roc(as.character(class_test5$tumor), nrf5_roc[,"0"])
+  # ldasens2[i] <- slnrf5_tree$sensitivities[slnrf5_tree$specificities >= 0.99][1]
+  # ldaauc2[i] <- slnrf5_tree$auc
+  sens_vec[i] <- locked_sens(rnrf7_tree$specificities,rnrf7_tree$sensitivities)
+  # rfsens7b2[i] <- mean(rnrf7_tree$sensitivities[rnrf7_tree$specificities >= 0.99])
+  # rfauc7b[i] <- rnrf7_tree$auc
+  # rfspec7b[i] <- cf7b$byClass[2]
+  # glmsens7b[i] <-  locked_sens(gnrf7_tree$specificities,gnrf7_tree$sensitivities)
+  # glmsens7b2[i] <- mean(gnrf7_tree$sensitivities[gnrf7_tree$specificities >= 0.99])
+  # glmauc7b[i] <- gnrf7_tree$auc
+  # glmspec7b[i] <- cf7b2$byClass[2]
+  # nbsens2[i] <- nrf5_tree$sensitivities[gnrf5_tree$specificities >= 0.99][1]
+  # nbauc2[i] <- nrf5_tree$auc
+  }
+  return(sens_vec)
+  
+}
+```
+
+```{r}
+tumor1 <- calc_sens(df1[,-c(1,2,43,44,45)],1,101)
+tumor2 <- calc_sens(df2[,-c(1,2,43,44)],2,101)
+tumor3 <- calc_sens(df3[,-c(1,2,43,44)],3,101)
+tumor4 <- calc_sens(df4[,-c(1,42,43,44,45)],4,101)
+tumor5 <- calc_sens(df5[,-c(1,2,43,44)],5,101)
+tumor6 <- calc_sens(df6bil,6,101)
+tumor7 <- calc_sens(df7[,-c(1,42)],7,101)
+tumor8 <- calc_sens(df6[,-c(1,42,43,44,45,46,47,48)],8,101)
+```
+
+```{r}
+tsize1 <- data.frame(TumorDiameter = 1.2, Method = "CNA",sensitivity = tumor1)
+tsize2 <- data.frame(TumorDiameter = 1.6, Method = "CNA",sensitivity = tumor2)
+tsize3 <- data.frame(TumorDiameter = 1.8, Method = "CNA",sensitivity = tumor3)
+tsize4 <- data.frame(TumorDiameter = 2.0, Method = "CNA",sensitivity = tumor4)
+tsize5 <- data.frame(TumorDiameter = 2.1, Method = "CNA",sensitivity = tumor5)
+tsize6 <- data.frame(TumorDiameter = 2.3, Method = "CNA",sensitivity = tumor6)
+tsize7 <- data.frame(TumorDiameter = 2.4, Method = "CNA",sensitivity = tumor7)
+tsize8 <- data.frame(TumorDiameter = 2.5, Method = "CNA",sensitivity = tumor8)
+msize1 <- data.frame(TumorDiameter = 1.2, Method = "Mutation",sensitivity = 0.048)
+msize2 <- data.frame(TumorDiameter = 1.6, Method = "Mutation",sensitivity = 0.272)
+msize3 <- data.frame(TumorDiameter = 1.8, Method = "Mutation",sensitivity = 0.601)
+msize4 <- data.frame(TumorDiameter = 2.0, Method = "Mutation",sensitivity = 0.842)
+msize5 <- data.frame(TumorDiameter = 2.1, Method = "Mutation",sensitivity = 0.953)
+msize6 <- data.frame(TumorDiameter = 2.3, Method = "Mutation",sensitivity = 0.989)
+msize7 <- data.frame(TumorDiameter = 2.4, Method = "Mutation",sensitivity = 0.998)
+msize8 <- data.frame(TumorDiameter = 2.5, Method = "Mutation",sensitivity = 1.000)
+tumor_sizes <- rbind(tsize1,tsize2,tsize3,tsize4,tsize5,tsize6,tsize7,tsize8,msize1,msize2,msize3,
+                     msize4,msize5,msize6,msize7,msize8)
+library(dplyr)
+tumor_sizes_agg <- tumor_sizes %>%
+  group_by(TumorDiameter,Method) %>%
+  summarise( 
+    n=n(),
+    mean=mean(sensitivity),
+    sd=sd(sensitivity)
+  ) %>%
+  mutate( se=sd/sqrt(n))  %>%
+  mutate( ic=se * qt((1-0.05)/2 + .5, n-1))
+figure3.1 <- ggplot(tumor_sizes_agg,aes(x=TumorDiameter,y=mean,color=Method)) +
+  geom_line() + geom_point() +
+  geom_errorbar( aes(x=TumorDiameter, ymin=mean-ic, ymax=mean+ic), width=0.1, colour="orange", alpha=0.9, size=0.7) +
+  ggtitle("Tumor Detection using CNA vs Mutations") + labs(x = "Tumor Diameter (cm)", y = "Average Sensitivity at 99% Specificity") + theme(text=element_text(size=13))
+```
+
+
+100 Train-Test Split WGS for Line Plot
+```{r}
+library(caret)
+library(pROC)
+###### 1 bil
+# glmsens1b <- numeric(100)
+# glmsens1b2 <- numeric(100)
+# glmauc1b <- numeric(100)
+# rfsens1b <- numeric(100)
+# rfsens1b2 <- numeric(100)
+# rfauc1b <- numeric(100)
+# glmspec1b <- numeric(100)
+# rfspec1b <- numeric(100)
+# BAFWGS1bil <- read_csv("~/Downloads/BAFWGS1bil.csv")
+# df1 <- data.frame(BAFWGS1bil)
+# df1.1 <- df1[,-c(1,2,43)]
+# set.seed(101)
+#### 2 bil
+# glmsens2b <- numeric(100)
+# glmsens2b2 <- numeric(100)
+# glmauc2b <- numeric(100)
+# rfsens2b <- numeric(100)
+# rfsens2b2 <- numeric(100)
+# rfauc2b <- numeric(100)
+# glmspec2b <- numeric(100)
+# rfspec2b <- numeric(100)
+# BAFWGS2bil <- read_csv("~/Downloads/BAFWGS2bil.csv")
+# df2 <- data.frame(BAFWGS2bil)
+# df2.1 <- df2[,-c(1,2,43)]
+##### 3 bil
+#BAFWGS5bil <- read_csv("~/Downloads/BAFWGS5bil.csv")
+#df5 <- data.frame(BAFWGS5bil)
+# df3.1 <- df3[,-c(1,2,43)]
+# glmsens3b <- numeric(100)
+# glmsens3b2 <- numeric(100)
+# glmauc3b <- numeric(100)
+# rfsens3b <- numeric(100)
+# rfsens3b2 <- numeric(100)
+# rfauc3b <- numeric(100)
+# glmspec3b <- numeric(100)
+# rfspec3b <- numeric(100)
+##### 4 bil
+# glmsens4b <- numeric(100)
+# glmsens4b2 <- numeric(100)
+# glmauc4b <- numeric(100)
+# rfsens4b <- numeric(100)
+# rfsens4b2 <- numeric(100)
+# rfauc4b <- numeric(100)
+# glmspec4b <- numeric(100)
+# rfspec4b <- numeric(100)
+# df4.11 <- df4.1[,-c(1,42,43,44,45)]
+# set.seed(101)
+###### 6 bil
+# glmsens6b <- numeric(100)
+# glmsens6b2 <- numeric(100)
+# glmauc6b <- numeric(100)
+# rfsens6b <- numeric(100)
+# rfsens6b2 <- numeric(100)
+# rfauc6b <- numeric(100)
+# glmspec6b <- numeric(100)
+# rfspec6b <- numeric(100)
+# BAFWGS6bil <- read_csv("~/Downloads/BAFWGS6bil.csv")
+# df6bil <- data.frame(BAFWGS6bil)
+# df6bil <- df6bil[,-c(1,2,43)]
+######## 7 bil
+glmsens7b <- numeric(100)
+# glmsens7b2 <- numeric(100)
+# glmauc7b <- numeric(100)
+rfsens7b <- numeric(100)
+# rfsens7b2 <- numeric(100)
+# rfauc7b <- numeric(100)
+# glmspec7b <- numeric(100)
+# rfspec7b <- numeric(100)
+BAFWGS7bil <- read_csv("~/Downloads/BAFWGS7bil.csv")
+df7 <- data.frame(BAFWGS7bil)
+df7 <- df7[,-c(1,2,43)]
+set.seed(101)
+# Add error bars for points
+# Do 1-10 billion cells for plot
+for (i in 1:100) {
+  print(i)
+  class_index5 <- createDataPartition(df7$tumor, p = .8, list = FALSE)
+  class_train5 <- df7[class_index5, ]
+  class_test5 <- df7[-class_index5, ]
+  # slnrf_fit5 <- train(as.factor(tumor) ~ .,
+  #                     data = class_train5[],
+  #                     method = "lda",  ## can also do "lasso, "ridge", ...etc
+  #                     preProc = c("center","scale")) 
+  rnrf_fit7 <- train(as.factor(tumor) ~ .,
+                     data = class_train5[],
+                     method = "rf",  ## can also do "lasso, "ridge", ...etc
+                     preProc = c("center","scale")) 
+  gnrf_fit7 <- train(as.factor(tumor) ~ .,
+                     data = class_train5[],
+                     method = "glm",  ## can also do "lasso, "ridge", ...etc
+                     preProc = c("center","scale")) 
+  # nrf_fit5 <- train(as.factor(tumor) ~ .,
+  #                   data = class_train5[],
+  #                   method = "naive_bayes",  ## can also do "lasso, "ridge", ...etc
+  #                   preProc = c("center","scale")) 
+  # slnrf5_roc <- predict(slnrf_fit5, class_test5, type="prob")
+  # slnrf5_tree <- roc(as.character(class_test5$tumor), slnrf5_roc[,"0"])
+  r <- predict(rnrf_fit7, class_test5)
+  rnrf7_roc <- predict(rnrf_fit7, class_test5, type="prob")
+  cf7b <- confusionMatrix(r, as.factor(class_test5$tumor))
+  rnrf7_tree <- roc(as.character(class_test5$tumor), rnrf7_roc[,"7"])
+  g <-  predict(gnrf_fit7, class_test5)
+  gnrf7_roc <- predict(gnrf_fit7, class_test5, type="prob")
+  cf7b2 <- confusionMatrix(g, as.factor(class_test5$tumor))
+  gnrf7_tree <- roc(as.character(class_test5$tumor), gnrf7_roc[,"7"])
+  # nrf5_roc <- predict(nrf_fit5, class_test5, type="prob")
+  # nrf5_tree <- roc(as.character(class_test5$tumor), nrf5_roc[,"0"])
+  # ldasens2[i] <- slnrf5_tree$sensitivities[slnrf5_tree$specificities >= 0.99][1]
+  # ldaauc2[i] <- slnrf5_tree$auc
+  rfsens7b[i] <- locked_sens(rnrf7_tree$specificities,rnrf7_tree$sensitivities)
+  # rfsens7b2[i] <- mean(rnrf7_tree$sensitivities[rnrf7_tree$specificities >= 0.99])
+  # rfauc7b[i] <- rnrf7_tree$auc
+  # rfspec7b[i] <- cf7b$byClass[2]
+  glmsens7b[i] <-  locked_sens(gnrf7_tree$specificities,gnrf7_tree$sensitivities)
+  # glmsens7b2[i] <- mean(gnrf7_tree$sensitivities[gnrf7_tree$specificities >= 0.99])
+  # glmauc7b[i] <- gnrf7_tree$auc
+  # glmspec7b[i] <- cf7b2$byClass[2]
+  # nbsens2[i] <- nrf5_tree$sensitivities[gnrf5_tree$specificities >= 0.99][1]
+  # nbauc2[i] <- nrf5_tree$auc
+}
+```
+
+100 Train-Test Split WES Testing 4 Different Models
+```{r}
+# myfunc <- func(sens,spec) {} returns sensitivity at 99%
+BAFWES4bil <- read_csv("~/Downloads/BAFWES4bil.csv")
+edf4 <- data.frame(BAFWES4bil)
+edf4.1 <- edf4[,-c(1,2,43)]
+eldasens1 <- numeric(100)
+eldaauc1 <- numeric(100)
+erfsens1 <- numeric(100)
+erfauc1 <- numeric(100)
+eglmsens1 <- numeric(100)
+eglmauc1 <- numeric(100)
+enbsens1 <- numeric(100)
+enbauc1 <- numeric(100)
+set.seed(101)
+for (i in 1:100) {
+  print(i)
+  eclass_index5 <- createDataPartition(edf4.1$tumor, p = .8, list = FALSE)
+  eclass_train5 <- edf4.1[eclass_index5, ]
+  eclass_test5 <- edf4.1[-eclass_index5, ]
+  eslnrf_fit5 <- train(as.factor(tumor) ~ .,
+                      data = eclass_train5[],
+                      method = "lda",  ## can also do "lasso, "ridge", ...etc
+                      preProc = c("center","scale")) 
+  ernrf_fit5 <- train(as.factor(tumor) ~ .,
+                     data = eclass_train5[],
+                     method = "rf",  ## can also do "lasso, "ridge", ...etc
+                     preProc = c("center","scale")) 
+  egnrf_fit5 <- train(as.factor(tumor) ~ .,
+                     data = eclass_train5[],
+                     method = "glm",  ## can also do "lasso, "ridge", ...etc
+                     preProc = c("center","scale")) 
+  enrf_fit5 <- train(as.factor(tumor) ~ .,
+                    data = eclass_train5[],
+                    method = "naive_bayes",  ## can also do "lasso, "ridge", ...etc
+                    preProc = c("center","scale")) 
+  eslnrf5_roc <- predict(eslnrf_fit5, eclass_test5, type="prob")
+  eslnrf5_tree <- roc(as.character(eclass_test5$tumor), eslnrf5_roc[,"4"])
+  ernrf5_roc <- predict(ernrf_fit5, eclass_test5, type="prob")
+  ernrf5_tree <- roc(as.character(eclass_test5$tumor), ernrf5_roc[,"4"])
+  egnrf5_roc <- predict(egnrf_fit5, eclass_test5, type="prob")
+  egnrf5_tree <- roc(as.character(eclass_test5$tumor), egnrf5_roc[,"4"])
+  enrf5_roc <- predict(enrf_fit5, eclass_test5, type="prob")
+  enrf5_tree <- roc(as.character(eclass_test5$tumor), enrf5_roc[,"4"])
+  eldasens1[i] <- locked_sens(eslnrf5_tree$specificities,eslnrf5_tree$sensitivities)
+  eldaauc1[i] <- eslnrf5_tree$auc
+  erfsens1[i] <- locked_sens(ernrf5_tree$specificities,ernrf5_tree$sensitivities)
+  erfauc1[i] <- ernrf5_tree$auc
+  eglmsens1[i] <- locked_sens(egnrf5_tree$specificities,egnrf5_tree$sensitivities)
+  eglmauc1[i] <- egnrf5_tree$auc
+  enbsens1[i] <- locked_sens(enrf5_tree$specificities,enrf5_tree$sensitivities)
+  enbauc1[i] <- enrf5_tree$auc
+}
+```
+
+Line Plot for CNA
+```{r}
+rframe1bil <- melt(data.frame(TumorSize = "1", Method = "CNA", DetectionSensitivity = rfsens1))
+rframe2bil <- melt(data.frame(TumorSize = "2", Method = "CNA", DetectionSensitivity = rfsens2b))
+rframe3bil <- melt(data.frame(TumorSize = "3", Method = "CNA", DetectionSensitivity = rfsens3b))
+rframe4bil <- melt(data.frame(TumorSize = "4", Method = "CNA", DetectionSensitivity = rfsens4b))
+rframe5bil <- melt(data.frame(TumorSize = "5", Method = "CNA", DetectionSensitivity = rfsens5b))
+rframe6bil <- melt(data.frame(TumorSize = "6", Method = "CNA", DetectionSensitivity = rfsens6b))
+rframe7bil <- melt(data.frame(TumorSize = "7", Method = "CNA", DetectionSensitivity = rfsens7b))
+rframe8bil <- melt(data.frame(TumorSize = "8", Method = "CNA", DetectionSensitivity = rfsens))
+rframe1bilsp <- melt(data.frame(TumorSize = "1", Method = "CNA", DetectionSpecificity = rfspec1b))
+rframe2bilsp <- melt(data.frame(TumorSize = "2", Method = "CNA", DetectionSpecificity = rfspec2b))
+rframe3bilsp <- melt(data.frame(TumorSize = "3", Method = "CNA", DetectionSpecificity = rfspec3b))
+rframe4bilsp <- melt(data.frame(TumorSize = "4", Method = "CNA", DetectionSpecificity = rfspec4b))
+rframe5bilsp <- melt(data.frame(TumorSize = "5", Method = "CNA", DetectionSpecificity = rfspec5b))
+rframe5bilsp <- melt(data.frame(TumorSize = "5", Method = "CNA", DetectionSpecificity = rfspec5b))
+rframe6bilsp <- melt(data.frame(TumorSize = "6", Method = "CNA", DetectionSpecificity = rfspec6b))
+rframe7bilsp <- melt(data.frame(TumorSize = "7", Method = "CNA", DetectionSpecificity = rfspec7b))
+rframe8bilsp <- melt(data.frame(TumorSize = "8", Method = "CNA", DetectionSpecificity = rfspec))
+muframe1bil <- melt(data.frame(TumorSize = "1", Method = "Mutation", DetectionSensitivity = sens1b))
+muframe2bil <- melt(data.frame(TumorSize = "2", Method = "Mutation", DetectionSensitivity = sens2b))
+muframe3bil <- melt(data.frame(TumorSize = "3", Method = "Mutation", DetectionSensitivity = sens3b))
+muframe4bil <- melt(data.frame(TumorSize = "4", Method = "Mutation", DetectionSensitivity = sens4b))
+muframe5bil <- melt(data.frame(TumorSize = "5", Method = "Mutation", DetectionSensitivity = sens5b))
+muframe6bil <- melt(data.frame(TumorSize = "6", Method = "Mutation", DetectionSensitivity = sens6b))
+muframe7bil <- melt(data.frame(TumorSize = "7", Method = "Mutation", DetectionSensitivity = sens7b))
+muframe8bil <- melt(data.frame(TumorSize = "8", Method = "Mutation", DetectionSensitivity = sens8b))
+# muframe1bilsp <- melt(data.frame(TumorSize = "1", Method = "Mutation", DetectionSpecificity = spec1b))
+# muframe2bilsp <- melt(data.frame(TumorSize = "2", Method = "Mutation", DetectionSpecificity = spec2b))
+# muframe3bilsp <- melt(data.frame(TumorSize = "3", Method = "Mutation", DetectionSpecificity = spec3b))
+# muframe4bilsp <- melt(data.frame(TumorSize = "4", Method = "Mutation", DetectionSpecificity = spec4b))
+# muframe5bilsp <- melt(data.frame(TumorSize = "5", Method = "Mutation", DetectionSpecificity = spec5b))
+# muframe6bilsp <- melt(data.frame(TumorSize = "6", Method = "Mutation", DetectionSpecificity = spec6b))
+# muframe8bilsp <- melt(data.frame(TumorSize = "8", Method = "Mutation", DetectionSpecificity = spec8b))
+# lineplot <- rbind(rframe1bil,rframe2bil,rframe3bil,rframe4bil,rframe5bil,rframe6bil,rframe8bil,rframe1bilsp,rframe2bilsp,rframe3bilsp,rframe4bilsp,rframe5bilsp,rframe6bilsp,rframe8bilsp,muframe1bil,muframe2bil,muframe3bil,
+#                   muframe4bil,muframe5bil,muframe6bil,muframe8bil,muframe1bilsp,muframe2bilsp,muframe3bilsp,
+#                   muframe4bilsp,muframe5bilsp,muframe6bilsp,muframe8bilsp)
+lineplot <- rbind(rframe1bil,rframe2bil,rframe3bil,rframe4bil,rframe5bil,rframe6bil,rframe7bil,rframe8bil,rframe1bilsp,rframe2bilsp,rframe3bilsp,rframe4bilsp,rframe5bilsp,rframe6bilsp,rframe7bilsp,rframe8bilsp,muframe1bil,muframe2bil,muframe3bil,
+                  muframe4bil,muframe5bil,muframe6bil,muframe7bil,muframe8bil)
+lineplot
+```
+
+```{r}
+# Stack plots vertically, specificity as separate.
+library(dplyr)
+library(ggplot2)
+### Look at package cowplot, plot_grid(plot1,plot2,align=V,col=1) takes two ggplots
+lineplot1 <- lineplot %>% group_by(TumorSize,Method,variable) %>% summarise(n=n(),mean=mean(value),sd=sd(value)) %>% mutate(se = sd/sqrt(n)) %>% mutate(ic = se * qt((1-0.05)/2 + 0.5, n-1))
+lineplot1$TumorSize <- as.numeric(lineplot1$TumorSize)
+lineplotsens <- lineplot1[lineplot1$variable == "DetectionSensitivity",]
+lineplotspec <- lineplot1[lineplot1$variable == "DetectionSpecificity",]
+lineplotspecCNA <- lineplotspec[lineplotspec$Method == "CNA",]
+######
+figure3 <- ggplot(lineplotsens,aes(TumorSize,mean,group=Method)) + geom_line(aes(color=Method)) + geom_point(aes(color=Method)) + geom_errorbar(aes(ymin=mean-ic,ymax=mean+ic), width=0.1,color="orange") + geom_line(data=lineplotspecCNA,aes(x=TumorSize,y=mean,group=Method,color="green")) + geom_point(data=lineplotspecCNA,aes(x=TumorSize,y=mean,color="green")) + geom_errorbar(data=lineplotspecCNA,aes(ymin=mean-ic,ymax=mean+ic), width=0.1,color="orange") + labs(x = "Tumor Size (Billions of Cells)", y = "Average Sensitivity")
+# figure4 <- ggplot(lineplotspec,aes(TumorSize,mean,group=Method)) + geom_line(aes(color=Method)) + geom_point(aes(color=Method)) + geom_errorbar(aes(ymin=mean-ic,ymax=mean+ic), width=0.1,color="orange")
+#lineplot12 <- lineplot1[lineplot1$Method == "Mutation" & lineplot1$variable == "DetectionSpecifcity",]
+figure3.1 <- ggplot(lineplot1,aes(x=TumorSize,y=mean,group=Method)) + geom_line(aes(color=Method)) + geom_point(aes(color=Method)) + facet_grid(variable ~ ., scales="free_y") + geom_errorbar(aes(ymin=mean-ic,ymax=mean+ic), width=0.1,color="orange") + labs(x = "Tumor Size (Billions of Cells)", y = "Average Value over 100 Train-Test Split Permutations")
+```
+
+Testing Different Classifiers to detect cancer using BAF using WGS
+```{r}
+# Interpolation function
+df4.1 <- df4.1[,-c(1,42,43)]
+ldasens1 <- numeric(100)
+rfsens1 <- numeric(100)
+glmsens1 <- numeric(100)
+nbsens1 <- numeric(100)
+set.seed(101)
+for (i in 1:100) {
+  print(i)
+  class_index5 <- createDataPartition(df4.1$tumor, p = .8, list = FALSE)
+  class_train5 <- df4.1[eclass_index5, ]
+  class_test5 <- df4.1[-eclass_index5, ]
+  slnrf_fit5 <- train(as.factor(tumor) ~ .,
+                      data = class_train5[],
+                      method = "lda",  ## can also do "lasso, "ridge", ...etc
+                      preProc = c("center","scale")) 
+  rnrf_fit5 <- train(as.factor(tumor) ~ .,
+                     data = class_train5[],
+                     method = "rf",  ## can also do "lasso, "ridge", ...etc
+                     preProc = c("center","scale")) 
+  gnrf_fit5 <- train(as.factor(tumor) ~ .,
+                     data = class_train5[],
+                     method = "glm",  ## can also do "lasso, "ridge", ...etc
+                     preProc = c("center","scale")) 
+  nrf_fit5 <- train(as.factor(tumor) ~ .,
+                    data = class_train5[],
+                    method = "naive_bayes",  ## can also do "lasso, "ridge", ...etc
+                    preProc = c("center","scale")) 
+  slnrf5_roc <- predict(slnrf_fit5, class_test5, type="prob")
+  slnrf5_tree <- roc(as.character(class_test5$tumor), slnrf5_roc[,"4"])
+  rnrf5_roc <- predict(rnrf_fit5, class_test5, type="prob")
+  rnrf5_tree <- roc(as.character(class_test5$tumor), rnrf5_roc[,"4"])
+  gnrf5_roc <- predict(gnrf_fit5, class_test5, type="prob")
+  gnrf5_tree <- roc(as.character(class_test5$tumor), gnrf5_roc[,"4"])
+  nrf5_roc <- predict(nrf_fit5, class_test5, type="prob")
+  nrf5_tree <- roc(as.character(class_test5$tumor), nrf5_roc[,"4"])
+  ldasens1[i] <- locked_sens(slnrf5_tree$specificities,slnrf5_tree$sensitivities)
+  rfsens1[i] <- locked_sens(rnrf5_tree$specificities,rnrf5_tree$sensitivities)
+  glmsens1[i] <- locked_sens(gnrf5_tree$specificities,gnrf5_tree$sensitivities)
+  nbsens1[i] <- locked_sens(nrf5_tree$specificities,nrf5_tree$sensitivities)
+}
+```
+
+```{r}
+# vals <- data.frame("Model" = c("glm","lda","nb","rf"), "AverageSensitivity" = c(mean(glmsens2),mean(ldasens2),mean(nbsens2),mean(rfsens2)))
+# figure1.1 <- ggplot(vals,aes(x=Model,y=AverageSensitivity,fill=Model)) + geom_bar(stat="identity") + labs(y = "Average Sensitivity at 99%+ Specificity", title = "Model Testing using WGS + BAF to Detect 4 Billion Cell Tumor (30x Coverage)")
+# vals2 <- data.frame("Model" = c("glm","lda","nb","rf"), "AverageSensitivity" = c(mean(eglmsens2),mean(eldasens2),mean(enbsens2),mean(erfsens2)))
+# figure2.1 <- ggplot(vals2,aes(x=Model,y=AverageSensitivity,fill=Model)) + geom_bar(stat="identity") + labs(y = "Average Sensitivity at 99%+ Specificity", title = "Model Testing using WES + BAF to Detect 4 Billion Cell Tumor (3000x Coverage)")
+nb <- data.frame(model = "nb", sensitivity = nbsens1)
+rf <- data.frame(model = "rf", sensitivity = rfsens1)
+glm <- data.frame(model = "glm", sensitivity = glmsens1)
+lda <- data.frame(model = "lda", sensitivity = ldasens1)
+models <- rbind(nb,rf,glm,lda)
+
+nb2 <- data.frame(model = "nb", sensitivity = enbsens1)
+rf2 <- data.frame(model = "rf", sensitivity = erfsens1)
+glm2 <- data.frame(model = "glm", sensitivity = eglmsens1)
+lda2 <- data.frame(model = "lda", sensitivity = eldasens1)
+models2 <- rbind(nb2,rf2,glm2,lda2)
+
+library(dplyr)
+my_sum <- models %>%
+  group_by(model) %>%
+  summarise( 
+    n=n(),
+    mean=mean(sensitivity),
+    sd=sd(sensitivity)
+  ) %>%
+  mutate( se=sd/sqrt(n))  %>%
+  mutate( ic=se * qt((1-0.05)/2 + .5, n-1))
+
+my_sum2 <- models2 %>%
+  group_by(model) %>%
+  summarise( 
+    n=n(),
+    mean=mean(sensitivity),
+    sd=sd(sensitivity)
+  ) %>%
+  mutate( se=sd/sqrt(n))  %>%
+  mutate( ic=se * qt((1-0.05)/2 + .5, n-1))
+
+figure1.1 <- ggplot(my_sum) +
+  geom_bar( aes(x=model, y=mean), stat="identity", fill="forestgreen", alpha=0.5) +
+  geom_errorbar( aes(x=model, ymin=mean-ic, ymax=mean+ic), width=0.4, colour="orange", alpha=0.9, size=1.5) +
+  ggtitle("Model Testing using WGS + BAF to Detect 4 Billion Cell Tumor (30x Coverage)") + labs(y = "Average Sensitivity at 99%+ Specificity")
+
+figure2.1 <- ggplot(my_sum2) +
+  geom_bar( aes(x=model, y=mean), stat="identity", fill="forestgreen", alpha=0.5) +
+  geom_errorbar( aes(x=model, ymin=mean-ic, ymax=mean+ic), width=0.4, colour="orange", alpha=0.9, size=1.5) +
+  ggtitle("Using WES + BAF to Detect 2 cm diameter tumor (3000x Coverage)") + labs(y = "Average Sensitivity at 99% Specificity") + theme(text=element_text(size=12))
+```
+
+4 bil WGS plot
+```{r}
+library(dplyr)
+nb1s <- data.frame(model = "nb", sensitivity = nbsens1)
+nb1sm <- melt(nb1s)
+nbauc <- data.frame(model = "nb", AUC = nbauc2)
+nbaucm <- melt(nbauc)
+rf1s <- data.frame(model = "rf", sensitivity = rfsens1)
+rf1sm <- melt(rf1s)
+rfauc <- data.frame(model = "rf", AUC = rfauc2)
+rfaucm <- melt(rfauc)
+glm1s <- data.frame(model = "glm", sensitivity = glmsens1)
+glm1sm <- melt(glm1s)
+glmauc <- data.frame(model = "glm", AUC = glmauc2)
+glmaucm <- melt(glmauc)
+lda1s <- data.frame(model = "lda", sensitivity = ldasens1)
+lda1sm <- melt(lda1s)
+ldauc <- data.frame(model = "lda", AUC = ldaauc2)
+ldaucm <- melt(ldauc)
+nb1sp <- data.frame(model = "nb", specificity = test_nbspec)
+nb1spm <- melt(nb1sp)
+rf1sp <- data.frame(model = "rf", specificity = test_rfspec)
+rf1spm <- melt(rf1sp)
+glm1sp <- data.frame(model = "glm", specificity = test_glmspec)
+glm1spm <- melt(glm1sp)
+lda1sp <- data.frame(model = "lda", specificity = test_ldaspec)
+lda1spm <- melt(lda1sp)
+models1 <- rbind(nb1sm,rf1sm,glm1sm,lda1sm,nb1spm,rf1spm,glm1spm,lda1spm,
+                 nbaucm,rfaucm,glmaucm,ldaucm)
+
+# my_sum1 <- models1 %>%
+#   group_by(model) %>%
+#   summarise( 
+#     n=n(),
+#     mean_sensitivity=mean(sensitivity),
+#     sd_sensitivtiy=sd(sensitivity),
+#     mean_specificity=mean(specificity),
+#     sd_specificity=sd(specificity),
+#     mean_AUC=mean(AUC),
+#     sd_AUC=sd(AUC)
+#   ) %>%
+#   mutate( se_sensitivity=sd_sensitivity/sqrt(n),
+#           se_specificity=sd_specificity/sqrt(n),
+#           se_AUC=sd_AUC/sqrt(n)) %>%
+#   mutate( ic_sensitivity=se_sensitivity * qt((1-0.05)/2 + .5, n-1),
+#           ic_specificity=se_specificity * qt((1-0.05)/2 + .5, n-1),
+#           ic_AUC=se_AUC * qt((1-0.05)/2 + 0.5, n-1))
+
+# my_sum3 <- models3 %>%
+#   group_by(model) %>%
+#   summarise( 
+#     n=n(),
+#     mean=mean(AUC),
+#     sd=sd(AUC)
+#   ) %>%
+#   mutate( se=sd/sqrt(n))  %>%
+#   mutate( ic=se * qt((1-0.05)/2 + .5, n-1))
+
+# ggplot(my_sum1) +
+#   geom_bar( aes(x=model, y=mean), stat="identity", fill="forestgreen", alpha=0.5) +
+#   geom_errorbar( aes(x=model, ymin=mean-ic, ymax=mean+ic), width=0.4, colour="orange", alpha=0.9, size=1.5) +
+#   ggtitle("Sensitivity with 95% Confidence Interval") + labs(y = "Sensitivity")
+# 
+# ggplot(my_sum3) +
+#   geom_bar( aes(x=model, y=mean), stat="identity", fill="forestgreen", alpha=0.5) +
+#   geom_errorbar( aes(x=model, ymin=mean-ic, ymax=mean+ic), width=0.4, colour="orange", alpha=0.9, size=1.5) +
+#   ggtitle("AUC with 95% Confidence Interval") + labs(y = "AUC")
+```
+
+```{r}
+my_sum1
+```
+
+Whole Genome Performance Model Testing
+```{r}
+my_sum1 <- models1 %>% group_by(model,variable) %>% summarise(n=n(),mean=mean(value),sd=sd(value)) %>% mutate(se = sd/sqrt(n)) %>% mutate(ic = se * qt((1-0.05)/2 + 0.5, n-1))
+figure1 <- ggplot(my_sum1) + geom_bar(aes(x=model,y=mean,fill=variable), stat = "identity", position=position_dodge()) + geom_errorbar(aes(x=model,ymin=mean-ic,ymax=mean+ic,fill=variable),position=position_dodge(.9),width=0.4,alpha=0.9,color="black") + labs(title="Model Testing using WGS + BAF to Detect 4 Billion Cell Tumor (30x Coverage)", y="Average Value")
+```
+
+4 bil WES plot, Whole Exome Performance Testing
+```{r}
+# library(dplyr)
+# enb1s <- data.frame(model = "nb", sensitivity = enbsens1)
+# enb1sm <- melt(enb1s)
+# enbauc <- data.frame(model = "nb", AUC = enbauc2)
+# enbaucm <- melt(enbauc)
+# erf1s <- data.frame(model = "rf", sensitivity = erfsens1)
+# erf1sm <- melt(erf1s)
+# erfauc <- data.frame(model = "rf", AUC = erfauc2)
+# erfaucm <- melt(erfauc)
+# eglm1s <- data.frame(model = "glm", sensitivity = eglmsens1)
+# eglm1sm <- melt(eglm1s)
+# eglmauc <- data.frame(model = "glm", AUC = eglmauc2)
+# eglmaucm <- melt(eglmauc)
+# elda1s <- data.frame(model = "lda", sensitivity = eldasens1)
+# elda1sm <- melt(elda1s)
+# eldauc <- data.frame(model = "lda", AUC = eldaauc2)
+# eldaucm <- melt(eldauc)
+# enb1sp <- data.frame(model = "nb", specificity = etest_nbspec)
+# enb1spm <- melt(enb1sp)
+# erf1sp <- data.frame(model = "rf", specificity = etest_rfspec)
+# erf1spm <- melt(erf1sp)
+# eglm1sp <- data.frame(model = "glm", specificity = etest_glmspec)
+# eglm1spm <- melt(eglm1sp)
+# elda1sp <- data.frame(model = "lda", specificity = etest_ldaspec)
+# elda1spm <- melt(elda1sp)
+# emodels1 <- rbind(enb1sm,erf1sm,eglm1sm,elda1sm,enb1spm,erf1spm,eglm1spm,elda1spm,
+#                  enbaucm,erfaucm,eglmaucm,eldaucm)
+# emy_sum1 <- emodels1 %>% group_by(model,variable) %>% summarise(n=n(),mean=mean(value),sd=sd(value)) %>% mutate(se = sd/sqrt(n)) %>% mutate(ic = se * qt((1-0.05)/2 + 0.5, n-1))
+# figure2 <- ggplot(emy_sum1) + geom_bar(aes(x=model,y=mean,fill=variable), stat = "identity", position=position_dodge()) + geom_errorbar(aes(x=model,ymin=mean-ic,ymax=mean+ic,fill=variable),position=position_dodge(.9),width=0.4,alpha=0.9,color="black") + labs(title="Model Testing using WES + BAF to Detect 4 Billion Cell Tumor (3000x Coverage)", y="Average Value")
+```
+
+-log10 score threshold for 4 billion cells
+```{r}
+thresh <- seq(0,150,1)
+acc <- numeric(151)
+sens <- numeric(151)
+spec <- numeric(151)
+for (i in 1:151) {
+  for (j in 1:500) {
+    if (df4.1$score[j] >= thresh[i]) {
+      df4.1$scoreprediction[j] <- 4
+    }
+    if (df4.1$score[j] < thresh[i]) {
+      df4.1$scoreprediction[j] <- 0
+    }
+  }
+  acc[i] <- length(which(df4.1$tumor == df4.1$scoreprediction)) / 500
+  tp <- length(which(df4.1$tumor == 4 & df4.1$scoreprediction == 4))
+  tn <- length(which(df4.1$tumor == 0 & df4.1$scoreprediction == 0))
+  fn <- length(which(df4.1$tumor == 4 & df4.1$scoreprediction == 0))
+  fp <- length(which(df4.1$tumor == 0 & df4.1$scoreprediction == 4))
+  sens[i] <- tp / (tp + fn)
+  spec[i] <- tn / (tn + fp)
+}
+thresholds <- data.frame(Thresholds = as.character(thresh), Sensitivity = sens, Specificity = spec)
+```
+
+same as above for 1 billion cells
+```{r}
+thresh1bil <- seq(0,150,1)
+acc1bil <- numeric(151)
+sens1bil <- numeric(151)
+spec1bil <- numeric(151)
+for (i in 1:151) {
+  for (j in 1:500) {
+    if (df1$score[j] >= thresh[i]) {
+      df1$scoreprediction[j] <- 1
+    }
+    if (df1$score[j] < thresh[i]) {
+      df1$scoreprediction[j] <- 0
+    }
+  }
+  acc1bil[i] <- length(which(df1$tumor == df1$scoreprediction)) / 500
+  tp <- length(which(df1$tumor == 1 & df1$scoreprediction == 1))
+  tn <- length(which(df1$tumor == 0 & df1$scoreprediction == 0))
+  fn <- length(which(df1$tumor == 1 & df1$scoreprediction == 0))
+  fp <- length(which(df1$tumor == 0 & df1$scoreprediction == 1))
+  sens1bil[i] <- tp / (tp + fn)
+  spec1bil[i] <- tn / (tn + fp)
+}
+thresholds1bil <- data.frame(Thresholds = as.character(thresh1bil), Accuracy = acc1bil, Sensitivity = sens1bil, Specificity = spec1bil)
+mthresholds1bil <- melt(thresholds1bil)
+figure6 <- ggplot(mthresholds1bil,aes(x=as.numeric(Thresholds),y=value,group=variable)) + geom_point(aes(color=variable)) + geom_line(aes(color=variable)) + labs(x="Thresholds",title="-Log10 p-value of B-allele frequency (Null = 0.5) as Metric to identify 1 billion cell tumor")
+```
+
+```{r}
+mthresholds <- melt(thresholds)
+figure5 <- ggplot(mthresholds,aes(x=as.numeric(Thresholds),y=value,group=variable)) + geom_point(aes(color=variable)) + geom_line(aes(color=variable)) + labs(x="Thresholds",title="-Log10 p-value of B-allele frequency (Null = 0.5) as Metric to identify 2 cm diameter tumor")
+```
+
+```{r}
+which(acc == max(acc))
+which(acc1bil == max(acc1bil))
+```
+
+```{r}
+thresh[23]
+sens[23]
+spec[23]
+thresh[15]
+sens1bil[15]
+spec1bil[15]
+```
+
+```{r}
+df4
+df4.1
+##Test df4.1 threshold on df4
+```
+
+```{r}
+for (j in 1:500) {
+    if (df4$score[j] >= 25) {
+      df4$scoreprediction[j] <- 4
+    }
+    if (df4$score[j] < 25) {
+      df4$scoreprediction[j] <- 0
+    }
+}
+length(which(df4$tumor == df4$scoreprediction)) / 500
+tp <- length(which(df4$tumor == 4 & df4$scoreprediction == 4))
+tn <- length(which(df4$tumor == 0 & df4$scoreprediction == 0))
+fn <- length(which(df4$tumor == 4 & df4$scoreprediction == 0))
+fp <- length(which(df4$tumor == 0 & df4$scoreprediction == 4))
+sensthresh <- tp / (tp + fn)
+specthresh <- tn / (tn + fp)
+sensthresh
+specthresh
+result <- data.frame("Sensitivity" = sensthresh, "Specificity" = specthresh)
+result <- melt(result)
+figure7 <- ggplot(result,aes(x=variable,y=value,fill=variable)) + geom_bar(stat="identity") + labs(title="Testing -Log10 p-value of BAF as Threshold to identify 4 billion cell tumor")
+# Barplot
+```
+
+```{r}
+result <- data.frame("Sensitivity" = sensthresh, "Specificity" = specthresh)
+result <- melt(result)
+figure7 <- ggplot(result,aes(x=variable,y=value,fill=variable)) + geom_bar(stat="identity") + labs(title="Testing -Log10 p-value of BAF as Threshold to identify 2 cm diameter tumor")
+```
+
+```{r}
+DataFigure2 <- read_csv("~/Downloads/DataFigure2.csv")
+```
+
+```{r}
+dfig <- data.frame(DataFigure2)
+dfig <- dfig[,-c(1)]
+library(dplyr)
+dfig1 <- dfig %>% group_by(model) %>%
+  summarise(n=n(),mean=mean(sensitivity),sd=sd(sensitivity)) %>% mutate(
+    se=sd/sqrt(n)) %>% mutate(ic = se * qt((1-0.05)/2 + .5, n-1))
+
+figure1.12 <- ggplot(dfig1) + geom_bar(aes(x=model,y=mean), stat = "identity", fill = "forestgreen", alpha = 0.5) + geom_errorbar(aes(x=model,ymin=mean-ic,ymax=mean+ic), width = 0.4, color = "orange", alpha = 0.9, size = 1.5) + ggtitle("Using WGS + BAF to Detect 2 cm Diameter Tumor (30x Coverage)") + labs(y="Average Sensitivity at 99% Specificity") + theme(text=element_text(size=10))
+```
+
+Combinatorial Approach of ML/Random Forest vs crude statistical test (potential value to both)

@@ -1,0 +1,433 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Generate B-allele frequencies with -log10 scores for WGS
+
+```{r}
+df4.1 <- data.frame(patient = character(500), BAF1p = numeric(500), BAF1q = numeric(500), BAF2p = numeric(500), BAF2q = numeric(500), BAF3p = numeric(500), BAF3q = numeric(500), BAF4p = numeric(500), BAF4q = numeric(500), BAF5p = numeric(500), BAF5q = numeric(500), BAF6p = numeric(500), BAF6q = numeric(500),
+                 BAF7p = numeric(500), BAF7q = numeric(500), BAF8p = numeric(500), BAF8q = numeric(500), BAF9p = numeric(500), BAF9q = numeric(500), BAF10p = numeric(500), BAF10q = numeric(500), BAF11p = numeric(500), BAF11q = numeric(500), BAF12p = numeric(500), BAF12q = numeric(500),
+                 BAF13q = numeric(500), BAF14q = numeric(500), BAF15q = numeric(500), BAF16p = numeric(500), BAF16q = numeric(500), BAF17p = numeric(500), BAF17q = numeric(500), BAF18p = numeric(500), BAF18q = numeric(500), BAF19p = numeric(500), BAF19q = numeric(500),
+                 BAF20p = numeric(500), BAF20q = numeric(500), BAF21q = numeric(500), BAF22q = numeric(500), tumor = numeric(500), score = numeric(500))
+for (i in 1:500) {
+  print(i)
+  x <- 0
+  t <- sample(c(0,4),1,prob=c(0.5,0.5))
+  seg <- sample_ascn_profiles(ext_dir="ext", tcga_project='LUAD', n_tumors=1)
+  df4.1$patient[i] <- unique(seg$PATIENT_ID)
+  snp <- prepare_hetsnp_counts(M=t*(10^9), seg=seg, gt=gt, C=30)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 1])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 1])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF1p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 1])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 1])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF1q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 2])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 2])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF2p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 2])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 2])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF2q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 3])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 3])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF3p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 3])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 3])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF3q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 4])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 4])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF4p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 4])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 4])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF4q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 5])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 5])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF5p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 5])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 5])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF5q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 6])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 6])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF6p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 6])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 6])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF6q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 7])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 7])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF7p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 7])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 7])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF7q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 8])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 8])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF8p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 8])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 8])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF8q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 9])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 9])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF9p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 9])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 9])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF9q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 10])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 10])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF10p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 10])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 10])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF10q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 11])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 11])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF11p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 11])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 11])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF11q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 12])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 12])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF12p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 12])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 12])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF12q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 13])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 13])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF13q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 14])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 14])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF14q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 15])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 15])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF15q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 16])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 16])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF16p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 16])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 16])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF16q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 17])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 17])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF17p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 17])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 17])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF17q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 18])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 18])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF18p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 18])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 18])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF18q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 19])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 19])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF19p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 19])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 19])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF19q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 20])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 20])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF20p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 20])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 20])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF20q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 21])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 21])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF21q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 22])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 22])
+  x <- x + (-log10(binom.test(hap1,hap1+hap2,0.5)$p.value))
+  df4.1$BAF22q[i] <- hap1 / (hap1 + hap2)
+  df4.1$tumor[i] <- t
+  df4.1$score[i] <- x
+}
+write.csv(df4.1,"BAFWGS4bil.csv")
+```
+
+Same as above for WES
+```{r}
+library(dplyr)
+nexterarapidcapture_exome_targetedregions_v1_2_GRCh37 <- read_delim("~/Downloads/nexterarapidcapture_exome_targetedregions_v1.2.GRCh37.csv",
+                                                                    "\t", escape_double = FALSE, col_names = FALSE,
+                                                                    trim_ws = TRUE)
+exons <- as.data.frame(nexterarapidcapture_exome_targetedregions_v1_2_GRCh37)
+exons <- exons %>% rename(chr = X1, start = X2, end = X3)
+edf4 <- data.frame(patient = character(500), BAF1p = numeric(500), BAF1q = numeric(500), BAF2p = numeric(500), BAF2q = numeric(500), BAF3p = numeric(500), BAF3q = numeric(500), BAF4p = numeric(500), BAF4q = numeric(500), BAF5p = numeric(500), BAF5q = numeric(500), BAF6p = numeric(500), BAF6q = numeric(500),
+                 BAF7p = numeric(500), BAF7q = numeric(500), BAF8p = numeric(500), BAF8q = numeric(500), BAF9p = numeric(500), BAF9q = numeric(500), BAF10p = numeric(500), BAF10q = numeric(500), BAF11p = numeric(500), BAF11q = numeric(500), BAF12p = numeric(500), BAF12q = numeric(500),
+                 BAF13q = numeric(500), BAF14q = numeric(500), BAF15q = numeric(500), BAF16p = numeric(500), BAF16q = numeric(500), BAF17p = numeric(500), BAF17q = numeric(500), BAF18p = numeric(500), BAF18q = numeric(500), BAF19p = numeric(500), BAF19q = numeric(500),
+                 BAF20p = numeric(500), BAF20q = numeric(500), BAF21q = numeric(500), BAF22q = numeric(500), tumor = numeric(500))
+for (i in 1:500) {
+  print(i)
+  t <- sample(c(0,4),1,prob=c(0.5,0.5))
+  seg <- sample_ascn_profiles(ext_dir="ext", tcga_project='LUAD', n_tumors=1)
+  edf4$patient[i] <- unique(seg$PATIENT_ID)
+  gt1 <- copy(gt)
+  gt1$pos2 <- gt1$pos + 1
+  setkey(gt1,chr,pos,pos2)
+  y <- data.table(chr = exons$chr, start = exons$start, end = exons$end)
+  setkey(y, chr, start, end)
+  gt1 <- foverlaps(gt1,y,type="within")
+  idx <- which(!is.na(gt1$start))
+  gt1 <- gt1[idx,]
+  #gt1
+  snp <- prepare_hetsnp_counts(M=t*(10^9), seg=seg, gt=gt1, C=3000)
+  # Make M = 1 *10^12, make sure there are noticeable alterations
+  # x <- data.table(chr = snp$chr, start = snp$pos, end = snp$pos)
+  # y <- data.table(chr = exons$chr, start = exons$start, end = exons$end)
+  # setkey(y, chr, start, end)
+  # x <- foverlaps(x,y,type="within")
+  # idx <- which(!is.na(x$start))
+  # snp2 <- snp[idx,]
+  #i = 1
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 1])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 1])
+  edf4$BAF1p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 1])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 1])
+  edf4$BAF1q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 2])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 2])
+  edf4$BAF2p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 2])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 2])
+  edf4$BAF2q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 3])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 3])
+  edf4$BAF3p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 3])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 3])
+  edf4$BAF3q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 4])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 4])
+  edf4$BAF4p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 4])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 4])
+  edf4$BAF4q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 5])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 5])
+  edf4$BAF5p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 5])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 5])
+  edf4$BAF5q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 6])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 6])
+  edf4$BAF6p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 6])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 6])
+  edf4$BAF6q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 7])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 7])
+  edf4$BAF7p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 7])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 7])
+  edf4$BAF7q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 8])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 8])
+  edf4$BAF8p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 8])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 8])
+  edf4$BAF8q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 9])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 9])
+  edf4$BAF9p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 9])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 9])
+  edf4$BAF9q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 10])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 10])
+  edf4$BAF10p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 10])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 10])
+  edf4$BAF10q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 11])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 11])
+  edf4$BAF11p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 11])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 11])
+  edf4$BAF11q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 12])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 12])
+  edf4$BAF12p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 12])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 12])
+  edf4$BAF12q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 13])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 13])
+  edf4$BAF13q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 14])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 14])
+  edf4$BAF14q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 15])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 15])
+  edf4$BAF15q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 16])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 16])
+  edf4$BAF16p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 16])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 16])
+  edf4$BAF16q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 17])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 17])
+  edf4$BAF17p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 17])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 17])
+  edf4$BAF17q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 18])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 18])
+  edf4$BAF18p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 18])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 18])
+  edf4$BAF18q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 19])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 19])
+  edf4$BAF19p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 19])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 19])
+  edf4$BAF19q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "p" & snp$chr == 20])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "p" & snp$chr == 20])
+  edf4$BAF20p[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 20])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 20])
+  edf4$BAF20q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 21])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 21])
+  edf4$BAF21q[i] <- hap1 / (hap1 + hap2)
+  hap1 <- sum(snp$allele1_reads[snp$arm == "q" & snp$chr == 22])
+  hap2 <- sum(snp$allele2_reads[snp$arm == "q" & snp$chr == 22])
+  edf4$BAF22q[i] <- hap1 / (hap1 + hap2)
+  edf4$tumor[i] <- t
+}
+write.csv(edf4,"BAFWES4bil.csv")
+```
+
+Mutation Data Simulation (1x)
+```{r}
+BAFWGS2bil <- read_csv("~/Downloads/BAFWGS2bil.csv")
+df2 <- data.frame(BAFWGS2bil)
+df2.1 <- df2[,-c(1,43)]
+patients <- df2.1$patient
+tumvals <- df2.1$tumor
+for (i in 1:500) {
+    mut <- fread('lung_cappseq.txt')
+    mut <- mut[mut$PATIENT_ID == patients[i],]
+    tumor <- shedding_parameters(M=tumvals[i]*(10^9))
+    mut <- mut[,simulate_cappseq_read_counts(.SD, frac_ctdna=tumor$frac_ctdna, avg_depth=5000), by=index]
+    mut$sim_pval <- pbinom(q=mut$sim_alt_count-1,lower.tail=F,prob=0.0024/2,size=mut$sim_depth)
+    #mut$sim_qval <- p.adjust(mut$sim_pval,method='BH') ## use FDR corrected P-values
+    #mut[,sim_pval:=NULL]
+    mut <- mut[sim_pval < 0.01/nrow(mut),] ## drop variants with low significance (q>=0.01)
+    if (nrow(mut) == 0) {
+      df2.1$mutation[i] <- 0
+    }
+    if (nrow(mut) > 0) {
+      df2.1$mutation[i] <- 2
+    }
+}
+write.csv(df2.1,"MutationData2bil.csv")
+```
+
+Mutation Data Simulation (100x) + Result Gathering
+```{r}
+set.seed(101)
+BAFWGS7bil <- read_csv("~/Downloads/BAFWGS7bil.csv")
+df7 <- data.frame(BAFWGS7bil)
+df7 <- df7[,-c(1,43)]
+#mdf6 <- data.frame(BAFWGS6bil)
+#mdf6 <- mdf6[,-c(1,43)]
+#df5.2 <- df5[,-c(1,43)]
+#df2 <- data.frame(BAFWGS2bil)
+#df2.1 <- df2[,-c(1,43)]
+#patients <- df5.2$patient
+#tumvals <- df5.2$tumor
+patients <- df7$patient
+tumvals <- df7$tumor
+# patients <- df2.1$patient
+# tumvals <- df2.1$tumor
+# acc2b <- numeric(100)
+# sens2b <- numeric(100)
+# spec2b <- numeric(100)
+# wrongs2b <- character()
+acc7b <- numeric(100)
+sens7b <- numeric(100)
+spec7b <- numeric(100)
+wrongs7b <- character()
+for (j in 1:100) {
+  print(j)
+  for (i in 1:500) {
+    mut <- fread('lung_cappseq.txt')
+    mut <- mut[mut$PATIENT_ID == patients[i],]
+    tumor <- shedding_parameters(M=tumvals[i]*(10^9))
+    mut <- mut[,simulate_cappseq_read_counts(.SD, frac_ctdna=tumor$frac_ctdna, avg_depth=5000), by=index]
+    mut$sim_pval <- pbinom(q=mut$sim_alt_count-1,lower.tail=F,prob=0.0024/2,size=mut$sim_depth)
+    #mut$sim_qval <- p.adjust(mut$sim_pval,method='BH') ## use FDR corrected P-values
+    #mut[,sim_pval:=NULL]
+    mut <- mut[sim_pval < 0.05/nrow(mut),] ## drop variants with low significance (q>=0.01)
+    if (nrow(mut) == 0) {
+      df7$mutation[i] <- 0
+    }
+    if (nrow(mut) > 0) {
+      df7$mutation[i] <- 7
+    }
+  }
+  
+  # acc2b[j] <- length(which(df2.1$tumor == df2.1$mutation)) / 500
+  # tp <- length(which(df2.1$tumor == 2 & df2.1$mutation == 2))
+  # tn <- length(which(df2.1$tumor == 0 & df2.1$mutation == 0))
+  # fn <- length(which(df2.1$tumor == 2 & df2.1$mutation == 0))
+  # fnindex2b <- which(df2.1$tumor == 2 & df2.1$mutation == 0)
+  # fp <- length(which(df2.1$tumor == 0 & df2.1$mutation == 2))
+  # fpindex2b <- which(df2.1$tumor == 0 & df2.1$mutation == 2)
+  # sens2b[j] <- tp / (tp + fn)
+  # spec2b[j] <- tn / (tn + fp)
+  # #Difficult procedure to model false positives for mutation simulation
+  # wrongs2b <- c(wrongs2b,unique(df2.1[fnindex2b,]$patient))
+  acc7b[j] <- length(which(df7$tumor == df7$mutation)) / 500
+  tp <- length(which(df7$tumor == 7 & df7$mutation == 7))
+  tn <- length(which(df7$tumor == 0 & df7$mutation == 0))
+  fn <- length(which(df7$tumor == 7 & df7$mutation == 0))
+  fnindex7b <- which(df7$tumor == 7 & df7$mutation == 0)
+  fp <- length(which(df7$tumor == 0 & df7$mutation == 7))
+  fpindex7b <- which(df7$tumor == 0 & df7$mutation == 7)
+  sens7b[j] <- tp / (tp + fn)
+  spec7b[j] <- tn / (tn + fp)
+  #Difficult procedure to model false positives for mutation simulation
+  wrongs7b <- c(wrongs7b,unique(df7[fnindex7b,]$patient))
+}
+```
+
