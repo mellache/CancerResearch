@@ -1,0 +1,684 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(brnn)
+library(plyr)
+library(e1071)
+library(ggplot2)
+library(reshape2)
+library(pROC)
+library(corrplot)
+library(Metrics)
+library(dplyr)
+library(rpart)
+library(caret)
+library(randomForest)
+library(foreach)
+library(cvTools)
+library(ROCR)
+library(neuralnet)
+library(tree)
+library(rgl)
+```
+
+```{r}
+Final3.11
+```
+
+1st cohort, 14 patients (7 Malignant, 7 Benign)
+```{r}
+setwd("~/Desktop/OCULAR Files Cohort 1")
+# ocular_celldata_024937 <- read.csv("~/Downloads/ocular_celldata_024937.csv")
+# ocular_celldata_024938_1_ <- read.csv("~/Downloads/ocular_celldata_024938 (1).csv")
+# ocular_celldata_022569_7_ <- read.csv("~/Downloads/ocular_celldata_022569 (7).csv")
+# ocular_celldata_0225610_7_ <- read.csv("~/Downloads/ocular_celldata_0225610 (7).csv")
+# SU003.1 <- read.csv("~/Desktop/Ocular Files/SU003.1.csv") 
+# SU003.2 <- read.csv("~/Desktop/Ocular Files/SU003.2.csv")
+# SU034.1 <- read.csv("~/Desktop/Ocular Files/SU034.1.csv")
+# SU034.2 <- read.csv("~/Desktop/Ocular Files/SU034.2.csv")
+# SU005.1 <- read.csv("~/Desktop/Ocular Files/SU005.1.csv")
+# SU005.2 <- read.csv("~/Desktop/Ocular Files/SU005.2.csv")
+# SU054.1 <- read.csv("~/Desktop/Ocular Files/SU054.1.csv")
+# SU054.2 <- read.csv("~/Desktop/Ocular Files/SU054.2.csv")
+# SU008.1 <- read.csv("~/Desktop/Ocular Files/SU008.1.csv")
+# SU008.2 <- read.csv("~/Desktop/Ocular Files/SU008.2.csv")
+# SU066.1 <- read.csv("~/Desktop/Ocular Files/SU066.1.csv")
+# SU066.2 <- read.csv("~/Desktop/Ocular Files/SU066.2.csv")
+# SU010.1 <- read.csv("~/Desktop/Ocular Files/SU010.1.csv")
+# SU010.2 <- read.csv("~/Desktop/Ocular Files/SU010.2.csv")
+# SU071.1 <- read.csv("~/Desktop/Ocular Files/SU071.1.csv")
+# SU071.2 <- read.csv("~/Desktop/Ocular Files/SU071.2.csv")
+SU012.1 <- read.csv("SU012.1.csv")
+SU012.2 <- read.csv("SU012.2.csv")
+SU088.1 <- read.csv("SU088.1.csv")
+SU088.2 <- read.csv("SU088.2.csv")
+SU013.1 <- read.csv("SU013.1.csv")
+SU013.2 <- read.csv("SU013.2.csv")
+SU095.1 <- read.csv("SU095.1.csv")
+SU095.2 <- read.csv("SU095.2.csv")
+Final3.12 <- rbind(Final3.11, SU012.1, SU012.2, SU088.1, SU088.2, SU013.1, SU013.2, SU095.1, SU095.2)
+#Train <- rbind(ocular_celldata_024937,ocular_celldata_024938_1_,ocular_celldata_022569_7_,ocular_celldata_0225610_7_,SU003.1,SU003.2,SU034.1,SU034.2,SU005.1,SU005.2,SU054.1,SU054.2,SU008.1,SU008.2,SU066.1,SU066.2,SU010.1,SU010.2,SU071.1,SU071.2)
+
+```
+
+```{r}
+Final3.12
+```
+
+```{r}
+Final3.12[1000:1087,]
+```
+
+2nd cohort, 8 patients
+```{r}
+setwd("~/Desktop/OCULAR Files Cohort 2")
+SU036.1 <- read.csv("SU036.1.csv")
+SU036.2 <- read.csv("SU036.2.csv")
+SU083.1 <- read.csv("SU083.1.csv")
+SU083.2 <- read.csv("SU083.2.csv")
+SU093.1 <- read.csv("SU093.1.csv")
+SU093.2 <- read.csv("SU093.2.csv")
+SU109.1 <- read.csv("SU109.1.csv")
+SU109.2 <- read.csv("SU109.2.csv")
+SU127.1 <- read.csv("SU127.1.csv")
+SU127.2 <- read.csv("SU127.2.csv")
+SU141.1 <- read.csv("SU141.1.csv")
+SU141.2 <- read.csv("SU141.2.csv")
+SU152.1 <- read.csv("SU152.1.csv")
+SU152.2 <- read.csv("SU152.2.csv")
+SU161.1 <- read.csv("SU161.1.csv")
+SU161.2 <- read.csv("SU161.2.csv")
+Test <- rbind(SU036.1,SU036.2,SU083.1,SU083.2,SU093.1,SU093.2,SU109.1,SU109.2,SU127.1,SU127.2,SU141.1,SU141.2,SU152.1,SU152.2,SU161.1,SU161.2)
+```
+
+```{r}
+ncol(Final3.12)
+ncol(Test)
+#FullSet1.1 <- rbind(Final3.12, Test)
+```
+
+```{r}
+View(Final3.12)
+View(Test)
+```
+
+```{r}
+for (i in 1:281) {
+  Test$Group[i] = "Benign"
+}
+
+for (i in 282:712) {
+  Test$Group[i] = "Malignant"
+}
+```
+
+```{r}
+for (i in 1:78) {
+  Final3.12$Group[i] = "Benign"
+}
+
+for (i in 79:236) {
+  Final3.12$Group[i] = "Malignant"
+}
+for (i in 237:261) {
+  Final3.12$Group[i] = "Malignant"
+}
+for (i in 262:297) {
+  Final3.12$Group[i] = "Benign"
+}
+for (i in 298:327) {
+  Final3.12$Group[i] = "Malignant"
+}
+for (i in 328:438) {
+  Final3.12$Group[i] = "Benign"
+}
+for (i in 439:640) {
+  Final3.12$Group[i] = "Malignant"
+}
+for (i in 641:699) {
+  Final3.12$Group[i] = "Benign"
+}
+for (i in 700:724) {
+  Final3.12$Group[i] = "Malignant"
+}
+for (i in 725:866) {
+  Final3.12$Group[i] = "Benign"
+}
+for (i in 867:899) {
+  Final3.12$Group[i] = "Malignant"
+}
+for (i in 900:940) {
+  Final3.12$Group[i] = "Benign"
+}
+for (i in 941:1001) {
+  Final3.12$Group[i] = "Malignant"
+}
+for (i in 1002:1087) {
+  Final3.12$Group[i] = "Benign"
+}
+```
+
+```{r}
+TrainAtlasFinal3.12 = Final3.12[,-c(1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17)]
+TrainNoAtlasFinal3.12 = Final3.12[,-c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17)]
+TrainNoAtlasNoGroupFinal3.12 = Final3.12[,-c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,779)]
+```
+
+```{r}
+TestAtlasFinal3.1 = Test[,-c(1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17)]
+TestNoAtlasFinal3.1 = Test[,-c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17)]
+TestNoAtlasNoGroupFinal3.1 = Test[,-c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,779)]
+```
+
+```{r}
+# library(ggplot2)
+# ggplot(varImp(trainpCA3.12), fill=)
+```
+
+```{r}
+trainpCA3.12 <- prcomp(TrainNoAtlasNoGroupFinal3.12,scale=TRUE)
+plot(trainpCA3.12, type="l")
+testpCA3.1 <- prcomp(TestNoAtlasNoGroupFinal3.1,scale=TRUE)
+plot(testpCA3.1,type="l")
+```
+
+```{r}
+trainpCA4.01 <- cbind(TrainAtlasFinal3.12,trainpCA3.12$x[,1:6])
+#pCA4.1 <- pCA4.0[,c(763,764,765,766,767,768,769)]
+trainpCA4.11 <- trainpCA4.01[,c(764,765,766,767,768,769,763)]
+```
+
+```{r}
+testpCA4.0 <- cbind(TestAtlasFinal3.1,testpCA3.1$x[,1:6])
+#pCA4.1 <- pCA4.0[,c(763,764,765,766,767,768,769)]
+testpCA4.1 <- testpCA4.0[,c(764,765,766,767,768,769,763)]
+```
+
+```{r}
+View(trainpCA4.01)
+View(testpCA4.1)
+```
+
+```{r}
+head(trainpCA4.1)
+head(testpCA4.1)
+```
+
+```{r}
+trainxtest1.1 <- trainpCA4.11
+trainxtest1.1[trainpCA4.11$Group == "Benign",7] = 0
+trainxtest1.1[trainpCA4.11$Group == "Malignant",7] = 1
+```
+
+```{r}
+testxtest <- testpCA4.1
+testxtest[testpCA4.1$Group == "Benign",7] = 0
+testxtest[testpCA4.1$Group == "Malignant",7] = 1
+```
+
+```{r}
+head(trainxtest1.1)
+head(testxtest)
+```
+
+```{r}
+model1.11 = glm(as.factor(Group)~., data = trainxtest1.1, family = "binomial")
+summary(model1.11)
+```
+
+```{r}
+auc1.111 = roc(testxtest$Group, predict(model1.11,newdata = testxtest), plot=TRUE)
+auc1.111$auc
+```
+
+Logistic Regression AUC: 0.6061, Poor
+
+```{r}
+svmfit2.11 = svm(as.numeric(Group)~.,data=trainxtest1.1,kernel="radial",gamma=0.5,cost=10)
+auc1.311 = roc(testxtest$Group, predict(svmfit2.11,newdata = testxtest), plot=TRUE)
+auc1.311$auc
+```
+
+SVM Radial Kernel, cost = 10, AUC: 0.5442, Poor
+
+```{r}
+svmfit2.21 = svm(as.numeric(Group)~.,data=trainxtest1.1,kernel="radial",gamma=0.5,cost=100)
+auc1.321 = roc(testxtest$Group, predict(svmfit2.21,newdata = testxtest), plot=TRUE)
+auc1.321$auc
+```
+
+SVM Radial Kernel, cost = 100, AUC: 0.6036, Poor
+
+```{r}
+svmfit2.31 = svm(as.numeric(Group)~.,data=trainxtest1.1,kernel="polynomial",degree=3,cost=100)
+auc1.331 = roc(testxtest$Group, predict(svmfit2.31,newdata = testxtest), plot=TRUE)
+auc1.331$auc
+```
+
+SVM Polynomial Kernel, degreee = 3, cost = 100, AUC: 5367, Poor
+
+```{r}
+svmfit2.41 = svm(as.numeric(Group)~.,data=trainxtest1.1,kernel="polynomial",degree=4,cost=100)
+auc1.341 = roc(testxtest$Group, predict(svmfit2.41,newdata = testxtest), plot=TRUE)
+auc1.341$auc
+```
+
+SVM Polynomial Kernel, degree = 4, cost = 100, AUC: 6833, Best of the bunch
+
+```{r}
+svmfit2.51 = svm(as.numeric(Group)~.,data=trainxtest1.1,kernel="polynomial",degree=2,cost=100)
+auc1.351 = roc(testxtest$Group, predict(svmfit2.51,newdata = testxtest), plot=TRUE)
+auc1.351$auc
+```
+
+SVM Polynomial Kernel, degree = 2, cost = 100, AUC: 6159, Poor
+
+```{r}
+tuneout1.1 = tune(svm,as.numeric(Group)~.,data=trainxtest,kernel="polynomial",cost=100,ranges=list(degree=c(2,3,4,5,6,7)))
+summary(tuneout1.1)
+```
+
+```{r}
+set.seed(123)
+library(factoextra)
+fviz_nbclust(trainxtest1.1[,-7], kmeans, method = "wss")
+fviz_nbclust(trainxtest1.1[,-7], kmeans, method = "silhouette")
+```
+
+Optimal number of clusters = 2
+
+```{r}
+km1.251 <- kmeans(trainxtest1.1[,-7], centers=2, nstart=50)
+km1.351 <- kmeans(trainxtest1.1[,-7], centers=3, nstart=50)
+```
+
+```{r}
+library(class)
+train.X1.1 = trainxtest1.1
+test.X1.1 = testxtest
+train.Y1.1 = as.numeric(trainxtest1.1$Group)
+# k = 5 seems to be optimal
+knn.pred1.1=knn((train.X1.1),(test.X1.1),train.Y1.1,k=5) # you can input any k value
+table(testxtest$Group,knn.pred1.1)
+mean(testxtest$Group == knn.pred1.1)
+y11 <- data.frame(actual=testxtest$Group,predicted=knn.pred1.1)
+auc1.911 = roc(as.numeric(testxtest$Group), as.numeric(y11$predicted),plot=TRUE)
+auc1.911$auc
+```
+
+K-nearest neigbors AUC: 0.5259, Poor
+
+```{r}
+library(MASS)
+lda.fit1.1 = lda(as.numeric(Group)~.,data=trainxtest1.1)
+lda.pred1.1 = predict(lda.fit1.1,testxtest)
+#lda.pred
+table(lda.pred1.1$class, testxtest$Group)
+mean(lda.pred1.1$class==testxtest$Group)
+```
+
+Linear Discriminant Analysis Accuracy: 0.4073034, Extremely Poor
+
+```{r}
+qda.fit1.1 = qda(as.numeric(Group)~.,data=trainxtest1.1)
+qda.pred1.1 = predict(qda.fit1.1,testxtest)
+mean(qda.pred1.1$class==testxtest$Group)
+```
+
+Quadratic Discriminant Analysis Accuracy: 0.4620787, Very Poor
+
+```{r}
+set.seed(401)
+nn2.11 = neuralnet(as.numeric(Group)~.,data=trainxtest1.1,hidden = c(2,2))
+plot(nn2.11)
+```
+
+```{r}
+auc1.921 = roc(testxtest$Group, predict(nn2.11,newdata = testxtest), plot=TRUE)
+auc1.921$auc
+```
+
+Neural Network AUC: 0.5989, Poor
+
+```{r}
+library(ggcorrplot)
+corr <- round(cor(trainpCA3.12), 1) # calculate correlation, must be numeric
+corr2 <- round(cor(testpCA3.12), 1) # calculate correlation, must be numeric
+ggcorrplot(corr, p.mat = cor_pmat(trainpCA3.12), # visualize
+           hc.order = FALSE, type = "full",
+           ggtheme = ggplot2::theme_classic,
+           color = c("#FC4E07", "white", "#00AFBB"),
+           outline.col = "white", lab = TRUE)
+ggcorrplot(corr2, p.mat = cor_pmat(testpCA3.1), # visualize
+           hc.order = FALSE, type = "full",
+           ggtheme = ggplot2::theme_classic,
+           color = c("#FC4E07", "white", "#00AFBB"),
+           outline.col = "white", lab = TRUE)
+
+```
+
+```{r}
+classFit <- train(as.factor(Group)~ .,
+               data = trainxtest1.1,
+               method = "glm") # Try using "lasso", "ridge", etc...
+classFit
+```
+
+```{r}
+fitControl <- trainControl(method = "repeatedcv",   
+                           number = 10,   # number of folds
+                           repeats = 10)  # repeated ten times
+```
+
+```{r}
+classFit.cv <- train(as.factor(Group) ~ .,
+                  data = trainxtest1.1,
+                  method = "glm",  ## can also do "lasso, "ridge", ...etc
+                  trControl = fitControl)  
+```
+
+```{r}
+classFit.cv
+```
+
+```{r}
+class_pred <- predict(classFit.cv, testxtest)
+```
+
+```{r}
+postResample(pred = class_pred, obs = as.factor(testxtest$Group))
+```
+
+```{r}
+library(ggplot2)
+ggplot(varImp(classFit.cv), fill=)
+```
+
+```{r}
+classFitrF <- train(as.factor(Group)~ .,
+               data = trainxtest1.1,
+               method = "rf") # Try using "lasso", "ridge", etc...
+classFitrF
+```
+
+```{r}
+classFitrf.cv <- train(as.factor(Group) ~ .,
+                  data = trainxtest1.1,
+                  method = "rf",  ## can also do "lasso, "ridge", ...etc
+                  trControl = fitControl)  
+```
+
+```{r}
+classFitrf.cv
+```
+
+```{r}
+class_predrF <- predict(classFitrf.cv, testxtest)
+postResample(pred = class_predrF, obs = as.factor(testxtest$Group))
+```
+
+Random Forest Accuracy: 0.51404494, Still Poor but better than logistic regression
+
+```{r}
+library(ggplot2)
+ggplot(varImp(classFitrf.cv), fill=)
+```
+
+```{r}
+library(naivebayes)
+classFitnB <- train(as.factor(Group)~ .,
+               data = trainxtest1.1,
+               method = "naive_bayes") # Try using "lasso", "ridge", etc...
+classFitnB
+```
+
+```{r}
+classFitnB.cv <- train(as.factor(Group) ~ .,
+                  data = trainxtest1.1,
+                  method = "naive_bayes",  ## can also do "lasso, "ridge", ...etc
+                  trControl = fitControl)  
+```
+
+```{r}
+class_prednB <- predict(classFitnB.cv, testxtest)
+postResample(pred = class_prednB, obs = as.factor(testxtest$Group))
+```
+
+Naive Bayes Accuracy: 0.4171348, Very Poor
+
+```{r}
+library(nnet)
+classFitnN <- train(as.factor(Group)~ .,
+               data = trainxtest1.1,
+               method = "nnet") # Try using "lasso", "ridge", etc...
+classFitnN
+```
+
+```{r}
+classFitnN.cv <- train(as.factor(Group) ~ .,
+                  data = trainxtest1.1,
+                  method = "nnet",  ## can also do "lasso, "ridge", ...etc
+                  trControl = fitControl)  
+```
+
+```{r}
+class_prednN <- predict(classFitnN.cv, testxtest)
+postResample(pred = class_prednN, obs = as.factor(testxtest$Group))
+```
+
+Neural Network Accuracy: 0.5, Poor
+
+```{r}
+library(kernlab)
+classFitpK <- train(as.factor(Group)~ .,
+               data = trainxtest1.1,
+               method = "svmPoly") # Try using "lasso", "ridge", etc...
+classFitpK
+```
+
+```{r}
+classFitpK.cv <- train(as.factor(Group) ~ .,
+                  data = trainxtest1.1,
+                  method = "svmPoly",  ## can also do "lasso, "ridge", ...etc
+                  trControl = fitControl)  
+```
+
+```{r}
+class_predpK <- predict(classFitpK.cv, testxtest)
+postResample(pred = class_predpK, obs = as.factor(testxtest$Group))
+```
+
+SVM Polynomial Kernel Accuracy: 0.46769663, Poor
+
+```{r}
+set.seed(401)
+class_index <- createDataPartition(trainxtest1.1$Group, p = .75, list = FALSE)
+class_train <- trainxtest1.1[class_index, ]
+class_test <- trainxtest1.1[-class_index, ]
+```
+
+```{r}
+set.seed(104)
+glm_fit <- train(as.factor(Group) ~ . ,
+                data = class_train[], 
+                method = "glm",
+                trControl = fitControl) ## CHANGE here for "rf" to get a random forest regression model 
+# Third, use model to make predictions on test set 
+glm_pred <- predict(glm_fit, class_test)
+postResample(pred = glm_pred, obs = as.factor(class_test$Group))
+```
+
+Testing within cohort than across cohorts and doing the train test split, we observe that accuracy increases from 0.4 to 0.67
+
+```{r}
+fullSet <- rbind(trainxtest1.1,testxtest)
+```
+
+```{r}
+set.seed(401)
+class_index1 <- createDataPartition(fullSet$Group, p = .75, list = FALSE)
+class_train1 <- fullSet[class_index1, ]
+class_test1 <- fullSet[-class_index1, ]
+```
+
+```{r}
+set.seed(104)
+glm_fit1 <- train(as.factor(Group) ~ . ,
+                data = class_train1[], 
+                method = "glm",
+                trControl = fitControl) ## CHANGE here for "rf" to get a random forest regression model 
+# Third, use model to make predictions on test set 
+glm_pred1 <- predict(glm_fit1, class_test1)
+postResample(pred = glm_pred1, obs = as.factor(class_test1$Group))
+```
+
+```{r}
+glm_CM <- confusionMatrix(glm_pred1, as.factor(class_test1$Group))
+glm_CM
+```
+
+```{r}
+glm_roc <- predict(glm_fit1, class_test1, type="prob")
+glm_tree <- roc(class_test1$Group, glm_roc[,"1"])
+plot(glm_tree)
+glm_tree$auc
+```
+
+Doing 75-25 split within combined dataset containing cells from first and second cohort, we see that accuracy significantly improves using the logistic regression algorithm due to the training-test split
+
+```{r}
+rf_fit1 <- train(as.factor(Group) ~ .,
+                  data = class_train1[],
+                  method = "rf",  ## can also do "lasso, "ridge", ...etc
+                  trControl = fitControl) 
+glm_pred2 <- predict(rf_fit1, class_test1)
+postResample(pred = glm_pred2, obs = as.factor(class_test1$Group))
+```
+
+```{r}
+rf_CM <- confusionMatrix(glm_pred2, as.factor(class_test1$Group))
+rf_CM
+```
+
+```{r}
+rf_roc <- predict(rf_fit1, class_test1, type="prob")
+rf_tree <- roc(class_test1$Group, rf_roc[,"1"])
+plot(rf_tree)
+rf_tree$auc
+```
+
+Random Forest Accuracy also significantly increases to 0.7327394, doing the 75-25 split within the combined dataset containing cells from the first and second cohort
+
+```{r}
+set.seed(401)
+nn_fit1 <- train(as.factor(Group) ~ .,
+                 data = class_train1[],
+                 method = "nnet",
+                 trControl = fitControl)
+nn_pred2 <- predict(nn_fit1, class_test1)
+postResample(pred = nn_pred2, obs = as.factor(class_test1$Group))
+```
+
+```{r}
+nn_CM <- confusionMatrix(nn_pred2, as.factor(class_test1$Group))
+nn_CM
+```
+
+Accuracy of Neural Network after doing the 75-25 split with cells from 1st and 2nd cohort is significantly higher, from 0.5 to 0.6926503
+
+```{r}
+library(kernlab)
+set.seed(401)
+svmradial_fit1 <- train(as.factor(Group) ~ .,
+                 data = class_train1[],
+                 method = "svmRadial",
+                 tunelength = 8,
+                 trControl = fitControl)
+svmradial_pred2 <- predict(svmradial_fit1, class_test1)
+postResample(pred = svmradial_pred2, obs = as.factor(class_test1$Group))
+```
+
+```{r}
+svmradial_CM <- confusionMatrix(svmradial_pred2, as.factor(class_test1$Group))
+svmradial_CM
+```
+
+```{r}
+radial_roc <- predict(svmradial_fit1, class_test1, type="prob")
+radial_tree <- roc(class_test1$Group, radial_roc[,"1"])
+plot(radial_tree)
+radial_tree$auc
+```
+
+Accuracy of Support Vector machine with radial kernel also significantly higher, at 0.7572383, doing 75-25 split with cells from 1st and 2nd cohort
+
+```{r}
+library(kernlab)
+set.seed(401)
+svmpoly_fit1 <- train(as.factor(Group) ~ .,
+                 data = class_train1[],
+                 method = "svmPoly",
+                 trControl = fitControl)
+svmpoly_pred2 <- predict(svmpoly_fit1, class_test1)
+postResample(pred = svmpoly_pred2, obs = as.factor(class_test1$Group))
+```
+
+```{r}
+svmpoly_CM <- confusionMatrix(svmpoly_pred2, as.factor(class_test1$Group))
+svmpoly_CM
+```
+
+```{r}
+poly_roc <- predict(svmpoly_fit1, class_test1, type="prob")
+poly_tree <- roc(class_test1$Group, poly_roc[,"1"])
+plot(poly_tree)
+poly_tree$auc
+```
+
+Accuracy of Support Vector machine with polynomial kernel also significantly higher, at 0.7527840, doing 75-25 split with cells from 1st and 2nd cohort
+
+```{r}
+library(class)
+set.seed(401)
+knn_fit1 <- train(as.factor(Group) ~ .,
+                 data = class_train1[],
+                 method = "knn",
+                 trControl = fitControl)
+knn_pred2 <- predict(knn_fit1, class_test1)
+postResample(pred = knn_pred2, obs = as.factor(class_test1$Group))
+```
+
+```{r}
+knn_CM <- confusionMatrix(knn_pred2, as.factor(class_test1$Group))
+knn_CM
+```
+
+```{r}
+library(pROC)
+knn_roc <- predict(knn_fit1, class_test1, type="prob")
+knn_tree <- roc(class_test1$Group, knn_roc[,"1"])
+plot(knn_tree)
+knn_tree$auc
+#AUC: 0.8323
+```
+
+Accuracy of K-nearest neighbors significantly higher, at 0.7661470, doing 75-25 split with cells from 1st and 2nd cohort
+
+
+
+There are so many possibilities to play with:
+1. How many principal components to include in data (PC1-PC6, PC1-PC9, PC1-PC20)?
+2. How much data should I ultimately include in the dataset (from 1st and 2nd cohort)?
+3. What training-test split should I do? 64-36? 75-25? 80-20?
+4. Which algorithm will perform best in classifying benign from malignant NSCLC using HD-SCA 3.0 cell data?
+5. How can I tune the algorithm to increase performance?
+
+Exciting!!!
+
+```{r}
+View(fullSet)
+```
+
