@@ -1,0 +1,121 @@
+---
+title: "Univariate Cox marker selection"
+author: "Hari Mellacheruvu"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+    toc: true
+    number_sections: true
+    fig_width: 10
+    fig_height: 10
+header-includes:
+  - \usepackage{leading}
+  - \leading{18pt}
+layout: page
+---
+
+```{r}
+all_samples = read.table(file = 'LIHC_sample_sheet.csv', sep = ',', 
+                         header = TRUE, row.names = 1)
+tumor_samples = all_samples[all_samples$Sample.Type == "Primary Tumor",]
+paired_50samples = read.table(file = 'LIHC_paired_normal_tumor.csv', 
+                              sep = ',', header = TRUE, row.names = 1)
+tumor_50samples = paired_50samples[paired_50samples$Sample.Type == "Primary Tumor",]
+train_validate_samples = rownames(tumor_samples)[!rownames(tumor_samples) %in% rownames(tumor_50samples)] #327 HCC samples for training and validation
+```
+
+```{r}
+head(all_samples)
+```
+
+
+## Sample split: 2/3 for training and 1/3 for validation 
+
+```{r}
+sample_size = floor(1/3*length(train_validate_samples))
+
+set.seed(0)
+validate_index= sample(seq_len(length(train_validate_samples)), size = sample_size)
+
+train = train_validate_samples[-validate_index] #218 samples for training 
+validate = train_validate_samples[validate_index] #109 samples for validation 
+```
+
+## Load training data (m-value/beta-value)
+
+```{r}
+library(data.table)
+# = as.matrix(fread('../processed_m_values.csv', sep = ',', header = TRUE), rownames=1) #m-value matrix (213392*430)
+
+data_train = t(mVals[,train]) #218*213392
+rownames(data_train) = all_samples[rownames(data_train), "Case.ID"]
+```
+
+```{r}
+dim(data_train)
+data_train_goodprobes <- data_train[,colnames(data_train) %in% rownames(dmp_filtered)]
+dim(data_train_goodprobes)
+```
+
+```{r}
+# library(data.table)
+# bVals = as.matrix(fread('../processed_b_values.csv', sep = ',', header = TRUE), rownames=1) #beta-value matrix (213392*430)
+# 
+# data_train = t(bVals[,train]) #218*213392
+# rownames(data_train) = all_samples[rownames(data_train), "Case.ID"]
+```
+
+```{r}
+survival_clinical_info = read.table(file = 'survival_clinical_info.csv', sep = ',', 
+                         header = TRUE, row.names = 1, fill=TRUE)
+head(survival_clinical_info)
+```
+## Univariate Cox model
+
+```{r}
+library(survival)
+library(survAUC)
+library(glmnet)
+```
+
+```{r}
+sign_level = 0.1
+
+out_mat = matrix(NA, dim(data_train_goodprobes)[2], 4)
+dim(out_mat)
+rownames(out_mat) = colnames(data_train_goodprobes)
+colnames(out_mat) = c("test", "df", "pvalue", "coef")
+```
+
+```{r}
+for (i in 1:(dim(data_train_goodprobes)[2])) { # Goes through all probes, univariate cox analysis performed so we can select probes to use in downstream analysis with test data (mutlivariate cox, random forest, etc)
+  
+  if (i %% 1000 == 0) {
+    cat(paste0("probe: ", i, "\n"))
+  }
+  
+  data_train_sub = data.frame(matrix(ncol = 0, nrow = dim(data_train_goodprobes)[1]))
+  data_train_sub$cg_1 = as.numeric(t(data_train_goodprobes[,c(i)]))
+   
+  data_train_sub$time = as.numeric(survival_clinical_info[rownames(data_train_goodprobes), "time"])
+  data_train_sub$status = as.numeric(survival_clinical_info[rownames(data_train_goodprobes), 'event'])
+   
+  cox_model = try(coxph(Surv(data_train_sub$time, data_train_sub$status)~cg_1, data=data_train_sub))
+  if (class(cox_model) == "try-error"){
+    next
+  } else {
+    out_mat[i,1:3] = summary(cox_model)$wald
+    out_mat[i,4] = summary(cox_model)$coef[1]
+  }
+}
+
+out_mat = as.data.frame(out_mat)
+to_use = subset(out_mat, out_mat$pvalue < sign_level) # filter based on p-value
+to_use = na.omit(to_use)
+to_use = to_use[order(to_use$pvalue),]
+
+write.csv(to_use, "univariate_Cox_selected_features_m.txt")
+# write.csv(to_use, "univariate_Cox_selected_features_beta.txt")
+```
+
+
