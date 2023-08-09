@@ -1,0 +1,2 @@
+This project focused on generating read counts across the genome at heterzygous SNPs using tumor size, cell-free DNA quantity, and copy number as parameters. 
+Allelic imbalance measured using B-allele frequency (# of reads at haplotype 1 / # of reads at haplotype 1 + 2) at these positions were used in a machine learning model to identify cancer presence
